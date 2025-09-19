@@ -1,7 +1,8 @@
 class UserController {
     // dependency injection of the user service
-  constructor(userService) {
+  constructor(userService,tokenService) {
     this.userService = userService;
+    this.tokenService=tokenService;
   }
 
   async register(req, res) {
@@ -37,16 +38,16 @@ class UserController {
         return res.status(401).json({ message: 'Invalid email or password.' });
       }
 
-      const accessToken = generateAccessToken(user); 
-      const refreshToken = generateRefreshToken(user);
+      const accessToken = this.tokenService.generateAccessToken(user);
+      const refreshToken = this.tokenService.generateRefreshToken(user);
 
         await this.userService.storeRefreshToken(refreshToken, user.id);
 
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true, 
-        secure: process.env.NODE_ENV === 'production', // if in production, only send over HTTPS
+        secure: process.env.NODE_ENV === 'production', // true if productions (https)
         sameSite: 'strict', // Mitigates CSRF attacks
-        maxAge: process.env.JWT_REFRESH_EXPIRES_IN * 24 * 60 * 60 * 1000 
+        maxAge: 1 * 24 * 60 * 60 * 1000 
       });
 
       res.status(200).json({
@@ -63,14 +64,6 @@ class UserController {
       console.error('Login error:', error);
       res.status(500).json({ message: 'An internal error occurred.' });
     }
-  }
-
-
-  async logoutUser(refreshToken) {
-    if (!refreshToken) {
-      return; 
-    }
-    await this.userDao.invalidateRefreshToken(refreshToken);
   }
 
 
