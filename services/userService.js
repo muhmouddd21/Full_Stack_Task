@@ -45,6 +45,15 @@ class UserService {
     delete user.password;
     return user;
   }
+
+    async logoutUser(refreshToken) {
+    if (!refreshToken) {
+      return; 
+    }
+    await this.userDao.invalidateRefreshToken(refreshToken);
+  }
+
+
     // Get user details by ID
   async getUserById(id) {
     const user = await this.userDao.findById(id);
@@ -70,8 +79,9 @@ class UserService {
 
 
     //  Issue a new access token.
-    const { generateAccessToken, generateRefreshToken } = require('../Services/tokenService');
-    const newAccessToken = generateAccessToken(user);
+    const tokenService = require('./tokenService'); // to get its functions
+    const tokenServiceInstance = new tokenService(this.userDao);
+    const newAccessToken =tokenServiceInstance.generateAccessToken(user);
 
     //  Return the new token and user info.
     delete user.password; // Ensure password is not returned

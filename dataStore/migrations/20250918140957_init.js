@@ -8,6 +8,7 @@ exports.up = function(knex) {
     table.string('username').notNullable().unique;
     table.string('email').notNullable().unique();
     table.string('password').notNullable();
+    table.enum('role',['admin','user']).defaultTo('user');
     table.timestamps(true, true);
   });
 };

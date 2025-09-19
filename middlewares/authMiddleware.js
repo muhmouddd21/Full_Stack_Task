@@ -1,8 +1,10 @@
-const { verifyAccessToken } = require('../Services/tokenService');
-const UserDao = require('../DAO/userDAO');
-const db = require('../DataStore'); // Your Knex instance
-
+const UserDao = require('../dao/userDao');
+const db = require('../dataStore'); 
 const userDao = new UserDao(db);
+const tokenService  = require('../services/tokenService');
+const tokenServiceInstance = new tokenService(userDao);
+// get the service to use the functions of dealing with access token
+
 
 
 const authMiddleware = async (req, res, next) => {
@@ -16,7 +18,7 @@ const authMiddleware = async (req, res, next) => {
 
   try {
     //  Verify the access token.
-    const payload = verifyAccessToken(token);
+    const payload = tokenServiceInstance.verifyAccessToken(token);
     if (!payload) {
       // If the token is invalid 
       return res.status(403).json({ message: 'Forbidden: Invalid or expired token.' });

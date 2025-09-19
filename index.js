@@ -1,39 +1,46 @@
 require('dotenv').config();
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const db = require('./dataStore'); // Knex instance
+
+
+// routes files
+const userRouter = require('./routes/user.routes.js');
+const taskRouter = require('./routes/task.routes.js');
+const authRouter = require('./routes/auth.routes.js');
+
 const app = express();
-
 app.use(express.json());
-app.use(cookieParser()); // handle cookies
+app.use(cookieParser());
 
-// Initialize components and wire them together
-const db = require('./DataStore'); // Knex instance
-const UserDao = require('./DAO/userDAO');
-const UserService = require('./Services/UserService');
-const UserController = require('./Controllers/UserController');
-const createAuthRouter = require('./Routes/auth');
-const createUserRouter = require('./Routes/users');
+// async bootstrap
+async function startServer() {
+  try {
+    console.log("Checking database connection...");
 
-// Initialize DAO, Service, and Controller
-const userDao = new UserDao(db);
-const userService = new UserService(userDao);
-const userController = new UserController(userService);
+    // Check if DB is available
+    await db.raw('SELECT 1');
+    console.log("Database connected");
 
-// Create routers
-const authRouter = createAuthRouter(userController);
-const userRouter = createUserRouter(userController);
+    // Mount routers
+    app.use('/v1/api/auth', authRouter);
+    app.use('/v1/api/tasks', taskRouter);
+    app.use('/v1/api/users', userRouter);
 
-// auth routes
-app.use('/api/auth', authRouter);
-// users 
-app.use('/api/users', userRouter);
+    // Global error handler
+    app.use((err, req, res, next) => {
+      console.error(err.stack);
+      res.status(500).send('Something broke!');
+    });
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
-});
+  
+    app.listen(3000, () => {
+      console.log(' Server running at http://localhost:3000');
+    });
+  } catch (err) {
+    console.error(" Failed to connect to database:", err.message);
+    process.exit(1); // i need to stop the whole process if DB not working
+  }
+}
 
-app.listen(3000, () => {
-  console.log('Server running at http://localhost:3000');
-});
+startServer();

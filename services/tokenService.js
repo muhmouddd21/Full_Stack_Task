@@ -1,7 +1,12 @@
 const jwt = require('jsonwebtoken');
 
+class tokenService{
 
-function generateAccessToken(user) {
+constructor(userDao){
+    this.userDao = userDao;
+  }
+
+ generateAccessToken(user) {
   const payload = {
     id: user.id,
     username: user.username
@@ -13,7 +18,7 @@ function generateAccessToken(user) {
 }
 
 
-function generateRefreshToken(user) {
+ generateRefreshToken(user) {
   const payload = {
     id: user.id
   };
@@ -23,7 +28,7 @@ function generateRefreshToken(user) {
   });
 }
  //  Functions to verify tokens 
-function verifyAccessToken(token) {
+ verifyAccessToken(token) {
   try {
     return jwt.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET);
   } catch (error) {
@@ -31,7 +36,7 @@ function verifyAccessToken(token) {
   }
 }
 
-function verifyRefreshToken(token) {
+ verifyRefreshToken(token) {
   try {
     return jwt.verify(token, process.env.JWT_REFRESH_TOKEN_SECRET);
   } catch (error) {
@@ -39,9 +44,5 @@ function verifyRefreshToken(token) {
   }
 }
 
-module.exports = {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyAccessToken,
-  verifyRefreshToken    
-};
+}
+module.exports = tokenService;
