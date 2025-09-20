@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const db = require('./dataStore'); // Knex instance
 
 
@@ -10,6 +11,12 @@ const taskRouter = require('./routes/task.routes.js');
 const authRouter = require('./routes/auth.routes.js');
 
 const app = express();
+
+app.use(cors({
+  origin: 'http://localhost:5173', // frontend URL
+  credentials: true, // allow cookies
+}));
+
 app.use(express.json());
 app.use(cookieParser());
 
