@@ -23,8 +23,8 @@ class TaskDao {
     // Apply search query 
     if (q) {
       query.andWhere(function() {
-        this.where('title', 'ilike', `%${q}%`)
-            .orWhere('description', 'ilike', `%${q}%`);
+        this.where('title', 'like', `%${q}%`)
+            .orWhere('description', 'like', `%${q}%`);
       });
     }
 
@@ -52,24 +52,38 @@ class TaskDao {
   }
     // Create a new task and return the created task object
   async create(taskDetails, userId) {
-    const [newTask] = await this.db('tasks')
-      .insert({
-        ...taskDetails,
-        user_id: userId, 
-      })
-      .returning('*');
+    const [insertedId] = await this.db("tasks").insert({
+      ...taskDetails,
+      user_id: userId,
+    });
+
+    // get the new inserted row
+    const newTask = await this.db("tasks")
+      .where({ id: insertedId })
+      .first();
+
     return newTask;
   }
 
     // Update task details and return the updated task object
   async update(taskId, taskUpdates, userId) {
-    const [updatedTask] = await this.db('tasks')
+      const allowedUpdates = {
+      title: taskUpdates.title,
+      description: taskUpdates.description,
+      status: taskUpdates.status,
+      due_date: taskUpdates.due_date,
+      updated_at: this.db.fn.now(),
+    };
+    await this.db('tasks')
       .where({ id: taskId, user_id: userId })
-      .update({
-        ...taskUpdates,
-        updated_at: this.db.fn.now(),
-      })
-      .returning('*');
+      .update(allowedUpdates)
+      
+      // get the updated task
+      const updatedTask = await this.db("tasks")
+      .where({ id: taskId, user_id: userId })
+      .first();
+
+  return updatedTask;
   }
   // Delete a task by ID and user ID. Returns the number of rows deleted (0 or 1).
   delete(taskId, userId) {

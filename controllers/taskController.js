@@ -40,6 +40,7 @@ class TaskController {
 
   async createTask(req, res) {
     try {
+      
       const taskDetails = req.body;
       const userId = req.user.id;
       const newTask = await this.taskService.createTask(taskDetails, userId);
