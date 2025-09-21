@@ -1,4 +1,4 @@
-# EverestMinds Backend
+# Task Backend
 
 A Node.js RESTful API for user authentication and task management, built with Express, Knex, and MySQL.
 
